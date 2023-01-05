@@ -1,0 +1,13 @@
+{
+    "connectionString":"XYZ",
+    "secret": "nodeapisecret",
+    "emailFrom": "info@node-express-crud-api",
+    "smtpOptions": {
+        "host": "smtp.ethereal.email",
+        "port": 587,
+        "auth": {
+            "user": "meredith.stokes95@ethereal.email",
+            "pass": "NbPyd6PYadP6xfFKGu"
+        }
+    }
+}
