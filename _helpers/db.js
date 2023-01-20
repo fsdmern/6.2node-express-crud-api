@@ -10,10 +10,10 @@ const connectionOptions = {
 mongoose.connect(process.env.MONGODB_URI || connectionOptions)
 
 module.exports = {
-    Account:,
-    RefresToken: ,
-    isValidId
-}
+  Account: require("accounts/account.model"),
+  RefresToken: require("accounts/refresh-token.model"),
+  isValidId
+};
 
 function isValidId(id) {
     return mongoose.Types.ObjectId.isValid(id)

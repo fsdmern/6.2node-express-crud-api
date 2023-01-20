@@ -1,4 +1,3 @@
-const config = require("config.json");
 const jwt = require("jsonwebtoken");
 const bcryptjs = require("bcryptjs");
 const crypto = require("crypto");
@@ -6,6 +5,7 @@ const sendEmail = require("_helpers/send-email");
 const db = require("_helpers/db");
 const bcrypt = require("bcryptjs/dist/bcrypt");
 const Role = required("_helpers/role");
+const jwtSecret = process.env.JWT_SECRET;
 
 module.exports = {};
 
@@ -176,7 +176,6 @@ async function update(id, params) {
   return basicDetails(account);
 }
 
-
 //Helper Functions
 async function getAccount(id) {
   if (!db.isValidId(id)) throw "Account not found";
@@ -198,7 +197,7 @@ function hash(password) {
 
 //Jwt token with 15mins expiry period
 function generateJwtToken(account, ipAddress) {
-  return jwt.sign({sub: account.id, id: account.id}, config.secret, {expiresIn: '15m'})
+  return jwt.sign({ sub: account.id, id: account.id }, jwtSecret, { expiresIn: "15m" });
 }
 
 //Refresh token with 7 days expiry period
@@ -210,7 +209,6 @@ function generateRefreshToken(account, ipAddress) {
     createdByIp: ipAddress,
   });
 }
-
 
 function randomTokenString() {
   return crypto.randomBytes(40).toString("hex");
@@ -260,22 +258,20 @@ async function sendAlreadyRegisteredEmail(email, origin) {
 }
 
 async function sendPasswordResetEmail(account, origin) {
-    let message;
-    if(origin) {
-        const resetUrl = `${origin}/account/reset-password?token=${account.resetToken.token}`
-        message = `<p>Please click the below link to reset the pssword</p>
-                  <p><a href="${resetUrl}">${resetUrl}</a></p>`
-    } else {
-        message = `<p>Please use the token to reset your password <code></code>/account/reset-password</p>
-        <p>${account.resetToken.token}</p>`
-    }
+  let message;
+  if (origin) {
+    const resetUrl = `${origin}/account/reset-password?token=${account.resetToken.token}`;
+    message = `<p>Please click the below link to reset the pssword</p>
+                  <p><a href="${resetUrl}">${resetUrl}</a></p>`;
+  } else {
+    message = `<p>Please use the token to reset your password <code></code>/account/reset-password</p>
+        <p>${account.resetToken.token}</p>`;
+  }
 
-    await sendEmail({
-        to: account.email,
-        subject: 'Reset Password Email',
-        html: `<h4>Reset Password Link</h4><br>
-                ${message}`
-    })
+  await sendEmail({
+    to: account.email,
+    subject: "Reset Password Email",
+    html: `<h4>Reset Password Link</h4><br>
+                ${message}`,
+  });
 }
-
-

@@ -19,11 +19,11 @@ router.post("/reset-password", resetPasswordSchema, resetPassword);
 router.post("/validate-reset-token", validateResetTokenSchema, validateResetToken);
 router.post("/refresh-token", refreshToken);
 router.post("/revoke-token", authorize(), revokeTokenSchema, revokeToken);
-router.get("/",authorize(Role.Admin),getAll)
-router.get("/:id",authorize(),getById)
-router.post("/",authorize(Role.Admin),createSchema, create)
-router.put("/:id",authorize(),updateSchema,update)
-router.delete("/:id", authorize(), _delete)
+router.get("/", authorize(Role.Admin), getAll);
+router.get("/:id", authorize(), getById);
+router.post("/", authorize(Role.Admin), createSchema, create);
+router.put("/:id", authorize(), updateSchema, update);
+router.delete("/:id", authorize(), _delete);
 
 module.exports = router;
 
@@ -156,81 +156,88 @@ function revokeToken(req, res, next) {
     .catch(next);
 }
 
-
-function getAll(req,res,next) {
+function getAll(req, res, next) {
   //view list of accounts/users
-  accountService.getAll()
-    .then(accounts => res.json(accounts))
-    .catch(next)
+  accountService
+    .getAll()
+    .then((accounts) => res.json(accounts))
+    .catch(next);
 }
 
-function getById(req,res, next) {
-    if(req.params.id != req.user.id && req.user.role !=Role.Admin){
-      return res.status(401).json({message: 'Unauthorized'})
-    }
+function getById(req, res, next) {
+  if (req.params.id != req.user.id && req.user.role != Role.Admin) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
-    accountService.getById(req.params.id)
-      .then(account => account ? res.json(account) : res.sendStatus(404))
-      .catch(next)
+  accountService
+    .getById(req.params.id)
+    .then((account) => (account ? res.json(account) : res.sendStatus(404)))
+    .catch(next);
 }
 
-
-createSchema(req, res, next) {
-    const schema = Joi.object({
-      title: Joi.string().required(),
-      firstName:Joi.string().required(),
-      lastName: Joi.string().required(),
-      email: Joi.string().email().required(),
-      password: Joi.string().min(6).required(),
-      confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
-      role: Joi.string().valid(Role.Admin, Role.User).required()
-    })
+function createSchema(req, res, next) {
+  const schema = Joi.object({
+    title: Joi.string().required(),
+    firstName: Joi.string().required(),
+    lastName: Joi.string().required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required(),
+    confirmPassword: Joi.string().valid(Joi.ref("password")).required(),
+    role: Joi.string().valid(Role.Admin, Role.User).required(),
+  });
 }
 
-create(req,res,next) {
-    accountService.create(req.body)
-      .then(account => res.json(account))
-      .catch(next)
+function create(req, res, next) {
+  accountService
+    .create(req.body)
+    .then((account) => res.json(account))
+    .catch(next);
 }
 
+function updateSchema(req, res, next) {
+  const schemaRules = {
+    title: Joi.string().empty(""),
+    firstName: Joi.string().empty(""),
+    lastName: Joi.string().empty(""),
+    email: Joi.string().email().empty(""),
+    password: Joi.string().min(6).empty(""),
+    confirmPassword: Joi.string().valid(Joi.ref("password")).empty(""),
+  };
 
-function updateSchema(req,res,next){
-    const schemaRules = {
-      title: Joi.string().empty(''),
-      firstName: Joi.string().empty(''),
-      lastName: Joi.string().empty(''),
-      email: Joi.string().email().empty(''),
-      password: Joi.string().min(6).empty(''),
-      confirmPassword: Joi.string().valid(Joi.ref('password')).empty(''),
-    }
+  if (req.user.role === Role.Admin) {
+    schemaRules.role = Joi.string().valid(Role.Admin, Role.User).empty("");
+  }
 
-    if(req.user.role === Role.Admin) {
-      schemaRules.role = Joi.string().valid(Role.Admin, Role.User).empty('')
-    }
-
-    const schema = Joi.object(schemaRules).with('password','confirmPassword')
-    validateRequest(req,res,next)
-
+  const schema = Joi.object(schemaRules).with("password", "confirmPassword");
+  validateRequest(req, res, next);
 }
 
-function update(req,res,next){
-   if(req.params.id != req.user.id && req.user.role !=Role.Admin) {
-        return res.status(401).json({message: 'Unauthorized'})
-   }
+function update(req, res, next) {
+  if (req.params.id != req.user.id && req.user.role != Role.Admin) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
-   accountService.update(req.params.id, req.body)
-    .then(account => res.json(account))
-    .catch(next)
+  accountService
+    .update(req.params.id, req.body)
+    .then((account) => res.json(account))
+    .catch(next);
 }
 
-function _delete(req,res,next){
-     if(req.params.id != req.user.id && req.user.role !=Role.Admin) {
-        return res.status(401).json({message: 'Unauthorized'})
-   }
+function _delete(req, res, next) {
+  if (req.params.id != req.user.id && req.user.role != Role.Admin) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
-   accountService.delete(req.params.id)
-    .then(()=> res.json({message: 'Account deleted successfully'}))
-    .catch(next)
+  accountService
+    .delete(req.params.id)
+    .then(() => res.json({ message: "Account deleted successfully" }))
+    .catch(next);
 }
 
-
+function setTokenCookie(res, token) {
+  const cookieOptions = {
+    httpOnly: true,
+    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  };
+  res.cookie("refreshToken", token, cookieOptions);
+}
