@@ -2,10 +2,10 @@
 const express = require("express");
 const router = express.Router();
 const Joi = require("joi");
-const validateRequest = require("_middleware/validate-request");
-const authorize = require("_middleware/authorize");
-const Role = require("_helpers/role");
-const accountService = require("./account.service");
+const validateRequest = require("../_middleware/validate-request");
+const authorize = require("../_middleware/authorize");
+const Role = require("../_helpers/role");
+const accountService = require("../accounts/account.service");
 const { request } = require("express");
 
 //routes
@@ -60,7 +60,7 @@ function registerSchema(req, res, next) {
 
 function register(req, res, next) {
   accountService
-    .register(req.body, req.get("origin"))
+    .register(req.body, req.headers.host) //cors: req.get('origin')
     .then(() =>
       res.json({ message: "Registration Successful. Please check your email for verification" })
     )
@@ -123,6 +123,19 @@ function resetPassword(req, res, next) {
   accountService
     .resetPassword(req.body)
     .then(() => res.json({ message: "Password reset successful, you can login now" }));
+}
+
+function validateResetTokenSchema(req, res, next) {
+  const schema = Joi.object({
+    token: Joi.string().required(),
+  });
+  validateRequest(req, next, schema);
+}
+function validateResetToken(req, res, next) {
+  accountService
+    .validateResetToken(req.body)
+    .then(() => res.json({ message: "Token is valid" }))
+    .catch(next);
 }
 
 function refreshToken(req, res, next) {

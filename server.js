@@ -1,14 +1,19 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const dotenv = require("dotenv");
 
 const app = express();
 let corsOptions = {
   origin: process.env.CLIENT_ORIGIN,
 };
 
+dotenv.config();
 app.use(cors(corsOptions));
 app.use(cookieParser());
+
+//Test Env Params
+console.log("Port No: " + process.env.SERVER_PORT);
 
 // Parse requests of content type: "application/json"
 app.use(express.json());

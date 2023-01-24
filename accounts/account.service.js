@@ -1,13 +1,37 @@
 const jwt = require("jsonwebtoken");
 const bcryptjs = require("bcryptjs");
 const crypto = require("crypto");
-const sendEmail = require("_helpers/send-email");
-const db = require("_helpers/db");
 const bcrypt = require("bcryptjs/dist/bcrypt");
-const Role = required("_helpers/role");
+
+const sendEmail = require("../_helpers/send-email");
+const db = require("../_helpers/db");
+const Role = require("../_helpers/role");
 const jwtSecret = process.env.JWT_SECRET;
 
-module.exports = {};
+module.exports = {
+  authenticate,
+  refreshToken,
+  revokeToken,
+  register,
+  verifyEmail,
+  forgotPassword,
+  validateResetToken,
+  resetPassword,
+  getAll,
+  getById,
+  create,
+  update,
+  getAccount,
+  getRefreshToken,
+  hash,
+  generateJwtToken,
+  generateRefreshToken,
+  randomTokenString,
+  basicDetails,
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+  sendAlreadyRegisteredEmail,
+};
 
 async function authenticate({ email, password, ipAddress }) {
   const account = await db.Account.findOne({ email });
@@ -59,7 +83,7 @@ async function revokeToken({ token, ipAddress }) {
 }
 
 async function register(params, origin) {
-  if (await db.account.findOne({ email: params.email })) {
+  if (await db.Account.findOne({ email: params.email })) {
     return await sendAlreadyRegisteredEmail(params.email, origin);
   }
 
@@ -78,6 +102,7 @@ async function register(params, origin) {
 
   //send email
   await sendVerificationEmail(account, origin);
+
 }
 
 async function verifyEmail({ token }) {
@@ -238,6 +263,7 @@ async function sendVerificationEmail(account, origin) {
                <p>Thanks for registering</p>
                ${message}`,
   });
+  
 }
 
 async function sendAlreadyRegisteredEmail(email, origin) {

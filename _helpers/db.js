@@ -1,20 +1,19 @@
 const mongoose = require("mongoose");
 
 const connectionOptions = {
-    useCreateIndex: true,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
+  useCreateIndex: true,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false,
 };
 
-mongoose.connect(process.env.MONGODB_URI || connectionOptions)
-
+mongoose.connect(process.env.MONGODB_URI || connectionOptions);
 module.exports = {
-  Account: require("accounts/account.model"),
-  RefresToken: require("accounts/refresh-token.model"),
-  isValidId
+  Account: require("../accounts/account.model"),
+  RefreshToken: require("../accounts/refresh-token.model"),
+  isValidId,
 };
 
 function isValidId(id) {
-    return mongoose.Types.ObjectId.isValid(id)
+  return mongoose.Types.ObjectId.isValid(id);
 }
